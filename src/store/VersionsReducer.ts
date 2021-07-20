@@ -6,7 +6,7 @@ type InitialStateType = {
     preloader: boolean
 }
 const initialState: InitialStateType = {
-    versions: serverDB.versions,
+    versions: [],
     preloader: false
 }
 
@@ -32,6 +32,7 @@ export const getVersionsTC = () => (dispatch: Dispatch) => {
     dispatch(setPreloaderAC(true))
     restGetVersions().then((res: any) => {
         dispatch(setVersionsAC(res))
+        console.log(res)
         dispatch(setPreloaderAC(false))
     }).catch(err => {
         alert("something went wrong "+err)
@@ -40,9 +41,15 @@ export const getVersionsTC = () => (dispatch: Dispatch) => {
 export const versionUpdateTC = (id:string, version: IVersionType) => (dispatch: Dispatch) => {
     dispatch(setPreloaderAC(true))
     restPutVersion(id, version).then((res: any) => {
-        dispatch(setVersionsAC(res))
         dispatch(setPreloaderAC(false))
+        restGetVersions().then((res: any) => {
+            dispatch(setVersionsAC(res))
+            dispatch(setPreloaderAC(false))
+        }).catch(err => {
+            alert("something went wrong "+err)
+        })
     }).catch(err => {
         alert("something went wrong "+err)
     })
+
 }

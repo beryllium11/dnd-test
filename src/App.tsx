@@ -15,7 +15,6 @@ import {connect} from "react-redux";
 import { AppRootStateType } from './store/store';
 import Preloader from "./preloader/Preloader";
 import {getVersionsTC, versionUpdateTC} from "./store/VersionsReducer";
-import {log} from "util";
 
 interface Item {
   id: string;
@@ -104,23 +103,34 @@ class App extends React.Component<AppStateType, IAppState> {
     droppable2: 'selected'
   };
 
-  public unreleasedItems: IVersionType[] = this.props.versions.filter(i => !i.released )
-  public releasedItems: IVersionType[] = this.props.versions.filter(i => i.released )
+  /*public unreleasedItems: IVersionType[] = this.props.versions.filter(i => !i.released )
+  public releasedItems: IVersionType[] = this.props.versions.filter(i => i.released )*/
 
 
   constructor(props: any) {
     super(props);
     this.state = {
-      items: this.unreleasedItems,
-      selected: this.releasedItems
+      items: [],
+      selected: []
     };
 
     this.onDragEnd = this.onDragEnd.bind(this);
     this.getList = this.getList.bind(this);
   }
+
   componentDidMount() {
     this.props.getVersionsTC()
   }
+
+  componentDidUpdate(prevProps: Readonly<AppStateType>, prevState: Readonly<IAppState>, snapshot?: any) {
+    if(prevProps.versions !== this.props.versions) {
+        this.setState({
+          items: this.props.versions.filter(i => !i.released),
+          selected: this.props.versions.filter(i => i.released)
+        })
+      }
+  }
+
 
   public getList (id: string):Item[] {
     // @ts-ignore
@@ -192,7 +202,7 @@ class App extends React.Component<AppStateType, IAppState> {
                   {...provided.droppableProps}
                   style={getListStyle(snapshot.isDraggingOver)}
                 >
-                  {this.state.items.map((item, index) => (
+                  { this.state.items.map((item, index) => (
                     <Draggable key={item.id} draggableId={item.id} index={index}>
                       {(providedDraggable:DraggableProvided, snapshotDraggable:DraggableStateSnapshot) => (
                           <div>
@@ -224,7 +234,7 @@ class App extends React.Component<AppStateType, IAppState> {
               <div
                 ref={provided.innerRef}
                 style={getListStyle(snapshot.isDraggingOver)}>
-                {this.state.selected.map((item, index) => (
+                { this.state.selected.map((item, index) => (
                   <Draggable
                     key={item.id}
                     draggableId={item.id}
