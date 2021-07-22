@@ -58,7 +58,9 @@ export async function restGetVersions() {
 export async function restPutVersion(id:string, version: IVersionType) {
     return new Promise((resolve) => {
         const index = serverDB.versions.findIndex((v) => v.id === id);
-        serverDB.versions[index] = version;
+        const nextVersions = [...serverDB.versions];
+        nextVersions[index] = version;
+        serverDB.versions = nextVersions;
         window.localStorage.setItem("serverDB", JSON.stringify(serverDB));
         setTimeout(() => resolve(version), 2000);
     });

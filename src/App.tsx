@@ -14,7 +14,7 @@ import {IVersionType} from "./server/Server"
 import {connect} from "react-redux";
 import { AppRootStateType } from './store/store';
 import Preloader from "./preloader/Preloader";
-import {getVersionsTC, versionUpdateTC} from "./store/VersionsReducer";
+import {getVersionsTC, setVersionChangeAC, setVersionPositionAC, versionUpdateTC} from "./store/VersionsReducer";
 
 interface Item {
   id: string;
@@ -68,14 +68,7 @@ const move = (source: Item[], destination: Item[], droppableSource:DraggableLoca
   }
   result.droppable = sequenceRewriter(sourceClone);
   result.droppable2 = sequenceRewriter(destClone);
-  let resultInDroppable = result.droppable.find(ver => ver.id === removed.id )
-  let resultInDroppable2 = result.droppable2.find(ver => ver.id === removed.id )
-  if (resultInDroppable) {
-    pulledVersion = resultInDroppable
-  }
-  if (resultInDroppable2) {
-    pulledVersion = resultInDroppable2
-  }
+  pulledVersion = removed
   return result;
 };
 
@@ -125,11 +118,14 @@ class App extends React.Component<AppStateType, IAppState> {
   componentDidUpdate(prevProps: Readonly<AppStateType>, prevState: Readonly<IAppState>, snapshot?: any) {
     if(prevProps.versions !== this.props.versions) {
         this.setState({
-          items: this.props.versions.filter(i => !i.released),
-          selected: this.props.versions.filter(i => i.released)
+          items: this.props.versions.unreleased,
+          selected: this.props.versions.released
         })
+      console.log(this.props.versions)
       }
   }
+
+
 
 
   public getList (id: string):Item[] {
@@ -144,8 +140,10 @@ class App extends React.Component<AppStateType, IAppState> {
     if (!destination) {
       return;
     }
-
+    const indexFrom = source.index
+    const indexTo = destination.index
     if (source.droppableId === destination.droppableId) {
+
       const items = reorder(
         this.getList(source.droppableId),
         source.index,
@@ -160,6 +158,7 @@ class App extends React.Component<AppStateType, IAppState> {
         state = {...this.state, items}
       }
 
+      this.props.setVersionPositionAC(pulledVersion, indexFrom, indexTo)
       this.setState(state);
 
     } else {
@@ -181,10 +180,9 @@ class App extends React.Component<AppStateType, IAppState> {
           selected: resultFromMove.droppable2
         })
       }
-
+      this.props.setVersionChangeAC(pulledVersion, indexFrom, indexTo)
     }
   this.props.versionUpdateTC(pulledVersion?.id, pulledVersion)
-  this.props.getVersionsTC()
   }
 
   public render() {
@@ -269,12 +267,17 @@ class App extends React.Component<AppStateType, IAppState> {
 }
 
 type MapStateToPropsType = {
-  versions: IVersionType[],
+  versions:  {
+    unreleased: IVersionType[]
+    released: IVersionType[]
+  }
   preloader: boolean
 }
 type MapDispatchToPropsType = {
   getVersionsTC: () => void,
   versionUpdateTC: (id:string, version: IVersionType) => void
+  setVersionChangeAC: (version: IVersionType, indexFrom: number, indexTo: number) => void
+  setVersionPositionAC: (version: IVersionType, indexFrom: number, indexTo: number) => void
 }
 export type AppStateType = MapStateToPropsType & MapDispatchToPropsType
 
@@ -284,4 +287,4 @@ let mapStateToProps = (state: AppRootStateType) => {
     preloader: state.versionsReducer.preloader
   }
 }
-export default connect(mapStateToProps, {getVersionsTC, versionUpdateTC})(App)
+export default connect(mapStateToProps, {getVersionsTC, versionUpdateTC, setVersionChangeAC, setVersionPositionAC})(App)
