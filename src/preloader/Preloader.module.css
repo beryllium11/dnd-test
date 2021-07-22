@@ -1,1 +1,1 @@
-.preloader {position: fixed; left: 50%; top: 30px; transform: translateX(-20px)}
+.preloader {position: absolute; left: auto; right: 10px; top: 5px; transform: translateX(-20px); max-width: 45px; height: auto}

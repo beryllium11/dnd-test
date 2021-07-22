@@ -28,6 +28,7 @@
   color: #61dafb;
 }
 h3 {text-align: center}
+.dragItems { position: relative;}
 
 @keyframes App-logo-spin {
   from {

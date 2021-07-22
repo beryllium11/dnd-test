@@ -31,7 +31,7 @@ interface IMoveResult {
   droppable2: Item[];
 }
 
-let pulledVersion: Item;
+let pulledVersion: Item = {id: '1', released: false, sequence: 1, name: "name"};
 
 const sequenceRewriter = (items: Item[]) => {
   return items.map(i => {
@@ -189,7 +189,7 @@ class App extends React.Component<AppStateType, IAppState> {
     return (
 
       <DragDropContext onDragEnd={this.onDragEnd}>
-        {this.props.preloader ? <Preloader/> : false}
+       {/* {this.props.preloader ? <Preloader/> : false}*/}
         <Flex justifyContent={"space-between"}>
           <div>
             <h3>Unreleased</h3>
@@ -200,10 +200,11 @@ class App extends React.Component<AppStateType, IAppState> {
                   {...provided.droppableProps}
                   style={getListStyle(snapshot.isDraggingOver)}
                 >
-                  { this.state.items.map((item, index) => (
-                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                  { this.state.items.map((item, index) => {
+                    return <Draggable key={item.id} draggableId={item.id} index={index}>
                       {(providedDraggable:DraggableProvided, snapshotDraggable:DraggableStateSnapshot) => (
-                          <div>
+                          <div className="dragItems">
+                            {item.id === pulledVersion.id && this.props.preloader ? <Preloader/> : false}
                             <div
                               ref={providedDraggable.innerRef}
                               {...providedDraggable.draggableProps}
@@ -219,7 +220,7 @@ class App extends React.Component<AppStateType, IAppState> {
                           </div>
                         )}
                     </Draggable>
-                  ))}
+                  })}
                   {provided.placeholder}
                 </div>
               )}
@@ -238,7 +239,8 @@ class App extends React.Component<AppStateType, IAppState> {
                     draggableId={item.id}
                     index={index}>
                     {(providedDraggable2:DraggableProvided, snapshotDraggable2:DraggableStateSnapshot) => (
-                      <div>
+                      <div className="dragItems">
+                        {item.id === pulledVersion.id && this.props.preloader ? <Preloader/> : false}
                         <div
                           ref={providedDraggable2.innerRef}
                           {...providedDraggable2.draggableProps}
