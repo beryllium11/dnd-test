@@ -33,18 +33,14 @@ export const versionsReducer  = (state: InitialStateType = initialState, action:
                 const newUnreleased = state.versions.unreleased
                 const [removed] = newReleased.splice(action.indexFrom, 1);
                 newUnreleased.splice(action.indexTo, 0, removed).sort((a, b) => a.sequence - b.sequence);
-                const newState = {...state, versions: {released: newReleased, unreleased: newUnreleased}}
-                console.log(newState)
-                return newState
+                return {...state, versions: {released: newReleased, unreleased: newUnreleased}}
             }
             else {
                 const newReleased = state.versions.released
                 const newUnreleased = state.versions.unreleased
                 const [removed] = newUnreleased.splice(action.indexFrom, 1);
                 newReleased.splice(action.indexTo, 0, removed).sort((a, b) => a.sequence - b.sequence);
-                const newState = {...state, versions: {released: newReleased, unreleased: newUnreleased}}
-                console.log(newState)
-                return newState
+                return  {...state, versions: {released: newReleased, unreleased: newUnreleased}}
             }
         }
         case "SET_VERSION_POSITION": {
@@ -81,7 +77,6 @@ export const getVersionsTC = () => (dispatch: Dispatch) => {
     dispatch(setPreloaderAC(true))
     restGetVersions().then((res: any) => {
         dispatch(setVersionsAC(res))
-        console.log(res)
         dispatch(setPreloaderAC(false))
     }).catch(err => {
         alert("something went wrong "+err)

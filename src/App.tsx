@@ -121,7 +121,6 @@ class App extends React.Component<AppStateType, IAppState> {
           items: this.props.versions.unreleased,
           selected: this.props.versions.released
         })
-      console.log(this.props.versions)
       }
   }
 
