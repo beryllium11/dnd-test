@@ -1,4 +1,4 @@
-import {IVersionType, restGetVersions, restPutVersion, serverDB} from "../server/Server";
+import {IVersionType, restGetVersions, restPutVersion} from "../server/Server";
 import {Dispatch} from "redux";
 
 type InitialStateType = {
@@ -7,13 +7,16 @@ type InitialStateType = {
         released: IVersionType[]
     } ,
     preloader: boolean
+    pulledVersion: IVersionType
 }
+
 const initialState: InitialStateType = {
     versions: {
         unreleased: [],
         released: []
     } ,
-    preloader: false
+    preloader: false,
+    pulledVersion: {id: '', released: false, sequence: 1, name: "qwer"}
 }
 
 export const versionsReducer  = (state: InitialStateType = initialState, action: ActionsVersionsType): InitialStateType => {
@@ -28,34 +31,38 @@ export const versionsReducer  = (state: InitialStateType = initialState, action:
             return {...state, preloader: action.preloader}
         }
         case "SET_VERSION_CHANGE": {
-            if (!action.version.released) {
+            if (action.tableId === "unreleased") {
                 const newReleased = state.versions.released
                 const newUnreleased = state.versions.unreleased
                 const [removed] = newReleased.splice(action.indexFrom, 1);
-                newUnreleased.splice(action.indexTo, 0, removed).sort((a, b) => a.sequence - b.sequence);
-                return {...state, versions: {released: newReleased, unreleased: newUnreleased}}
+                removed.sequence = action.indexTo
+                newUnreleased.splice(action.indexTo, 0, removed).map(i => ({...i, sequence: newUnreleased.indexOf(i)}));
+                return {...state, versions: {released: newReleased, unreleased: newUnreleased}, pulledVersion: removed}
             }
             else {
                 const newReleased = state.versions.released
                 const newUnreleased = state.versions.unreleased
                 const [removed] = newUnreleased.splice(action.indexFrom, 1);
-                newReleased.splice(action.indexTo, 0, removed).sort((a, b) => a.sequence - b.sequence);
-                return  {...state, versions: {released: newReleased, unreleased: newUnreleased}}
+                removed.sequence = action.indexTo
+                newReleased.splice(action.indexTo, 0, removed).map(i => ({...i, sequence: newReleased.indexOf(i)}));
+                return  {...state, versions: {released: newReleased, unreleased: newUnreleased}, pulledVersion: removed}
             }
         }
         case "SET_VERSION_POSITION": {
             let items:IVersionType[] = []
-            if (!action.version.released) {
+            if (action.tableId === "unreleased") {
                 items = state.versions.unreleased
                 const [removed] = items.splice(action.indexFrom, 1);
-                items.splice(action.indexTo, 0, removed)
-                return {...state, versions: {...state.versions, unreleased: items}}
+                removed.sequence = action.indexTo
+                items.splice(action.indexTo, 0, removed).map(i => ({...i, sequence: items.indexOf(i)}));
+                return {...state, versions: {...state.versions, unreleased: items}, pulledVersion: removed}
             }
             else {
                 items = state.versions.released
                 const [removed] = items.splice(action.indexFrom, 1);
-                items.splice(action.indexTo, 0, removed)
-                return {...state, versions: {...state.versions, released: items}}
+                removed.sequence = action.indexTo
+                items.splice(action.indexTo, 0, removed).map(i => ({...i, sequence: items.indexOf(i)}))
+                return {...state, versions: {...state.versions, released: items}, pulledVersion: removed}
             }
 
         }
@@ -64,8 +71,8 @@ export const versionsReducer  = (state: InitialStateType = initialState, action:
 }
 export const setVersionsAC = (versions: IVersionType[]) => ({type: "SET_VERSIONS", versions} as const)
 export const setPreloaderAC = (preloader: boolean) => ({type: "SET_PRELOADER", preloader} as const)
-export const setVersionChangeAC = (version: IVersionType, indexFrom: number, indexTo: number) => ({type: "SET_VERSION_CHANGE", version, indexFrom, indexTo} as const)
-export const setVersionPositionAC = (version: IVersionType, indexFrom: number, indexTo: number) => ({type: "SET_VERSION_POSITION", version, indexFrom, indexTo} as const)
+export const setVersionChangeAC = (tableId: string, indexFrom: number, indexTo: number) => ({type: "SET_VERSION_CHANGE", tableId, indexFrom, indexTo} as const)
+export const setVersionPositionAC = (tableId: string, indexFrom: number, indexTo: number) => ({type: "SET_VERSION_POSITION", tableId, indexFrom, indexTo} as const)
 
 type SetVersionsAT = ReturnType<typeof setVersionsAC>
 type SetPreloaderAT = ReturnType<typeof setPreloaderAC>

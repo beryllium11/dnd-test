@@ -33,13 +33,13 @@ const initialServerDB:IVersionsObjectType = {
             id: '4',
             name: "Version 4.0",
             released: false,
-            sequence: 1
+            sequence: 2
         },
         {
             id: '5',
             name: "Version 5.0",
             released: true,
-            sequence: 0
+            sequence: 1
         }
     ]
 };
